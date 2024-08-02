@@ -167,12 +167,11 @@ class Trainer:
 
                 if i % alfa_multiplied_qin == 0 and self.use_arcface and i > 10:
                     self.test_on_val_data(False, i, alfa_multiplied_qin)
-                    self.save_final_model(sum_it=False)
-                    self.save_tflite_model(path="model.tflite")
-                    self.save_quantized_tflite_model(path="model_quantized.tflite")
+                    self.save_final_model(sum_it=False, path=f"model_{i}.h5")
+                    self.save_tflite_model(sum_it=False, path=f"model_{i}.tflite")
+                    self.save_quantized_tflite_model(sum_it=False, path=f"model_quantized_{i}.tflite")
                     print("[*] Final model saved")
                     
-
                 if max_iteration is not None and i >= max_iteration:
                     print(f"[{i}] Reached to given maximum iteration({max_iteration})")
                     self.model_engine.model.save_weights(self.model_path)
@@ -192,16 +191,18 @@ class Trainer:
         m.save(path)
         print(f"[*] Final feature extractor saved to {path}")
 
-    def save_tflite_model(self, path: str = "model.tflite"):
-        converter = tf.lite.TFLiteConverter.from_keras_model(self.model_engine.model)
+    def save_tflite_model(self, path: str = "model.tflite", n: int = -4):
+        sub_model = tf.keras.models.Model(self.model_engine.model.layers[0].input, self.model_engine.model.layers[n].output)
+        converter = tf.lite.TFLiteConverter.from_keras_model(sub_model)
         tflite_model = converter.convert()
 
         with open(path, "wb") as f:
             f.write(tflite_model)
         print(f"[*] Model saved in TFLite format to {path}")
 
-    def save_quantized_tflite_model(self, path: str = "model_quantized.tflite"):
-        converter = tf.lite.TFLiteConverter.from_keras_model(self.model_engine.model)
+    def save_quantized_tflite_model(self, path: str = "model_quantized.tflite", n: int = -4):
+        sub_model = tf.keras.models.Model(self.model_engine.model.layers[0].input, self.model_engine.model.layers[n].output)
+        converter = tf.lite.TFLiteConverter.from_keras_model(sub_model)
         converter.optimizations = [tf.lite.Optimize.DEFAULT]
         tflite_model = converter.convert()
 
