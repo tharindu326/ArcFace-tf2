@@ -214,7 +214,7 @@ class Trainer:
 if __name__ == '__main__':
     TDOM = DSM.DataEngineTFRecord(
         "faces_emore/tran.tfrecords",  # tfrecord path
-        batch_size=48,
+        batch_size=64,
         epochs=-1,  # set to "-1" so it can stream forever
         buffer_size=30000,
         reshuffle_each_iteration=True,  # set True if you set test_batch to 0
