@@ -214,9 +214,9 @@ class Trainer:
 if __name__ == '__main__':
     TDOM = DSM.DataEngineTFRecord(
         "faces_emore/tran.tfrecords",  # tfrecord path
-        batch_size=64,
-        epochs=-1,  # set to "-1" so it can stream forever
-        buffer_size=30000,
+        batch_size=128,
+        epochs=10,  # set to "-1" so it can stream forever
+        buffer_size=60000,
         reshuffle_each_iteration=True,  # set True if you set test_batch to 0
         test_batch=0  # don't recommended on ArcFace training
     )  # TDOM for "Tensorflow Dataset Object Manager"
