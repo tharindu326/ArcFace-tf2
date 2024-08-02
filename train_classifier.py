@@ -168,8 +168,8 @@ class Trainer:
                 if i % alfa_multiplied_qin == 0 and self.use_arcface and i > 10:
                     self.test_on_val_data(False, i, alfa_multiplied_qin)
                     self.save_final_model(sum_it=False, path=f"model_{i}.h5")
-                    self.save_tflite_model(sum_it=False, path=f"model_{i}.tflite")
-                    self.save_quantized_tflite_model(sum_it=False, path=f"model_quantized_{i}.tflite")
+                    self.save_tflite_model(path=f"model_{i}.tflite")
+                    self.save_quantized_tflite_model(path=f"model_quantized_{i}.tflite")
                     print("[*] Final model saved")
                     
                 if max_iteration is not None and i >= max_iteration:
