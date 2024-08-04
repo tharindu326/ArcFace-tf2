@@ -7,6 +7,7 @@ from model_scripts import tensorboard_helper as TBH
 from model_scripts import main_model_architect as MMA
 
 from test_with_lfw import get_val_data, get_lfw_data, perform_val_arcface
+import os
 
 class Trainer:
     @staticmethod
@@ -54,10 +55,12 @@ class Trainer:
     def __init__(self, model_engine: MMA, dataset_engine: DSM, tensorboard_engine: TBH, use_arcface: bool,
                  learning_rate: float = 0.01,
                  model_path: str = "classifier_model.tf",
+                 output_folder: str = "output",
                  pooling_layer: tf.keras.layers.Layer = tf.keras.layers.GlobalAveragePooling2D,
                  lr_step_dict: dict = None,
                  optimizer: str = "ADAM", test_only_lfw: bool = True, regularizer_l: float = 5e-4):
         self.model_path = model_path
+        self.output_folder = output_folder
         self.model_engine = model_engine
         self.dataset_engine = dataset_engine
         self.tensorboard_engine = tensorboard_engine
@@ -65,7 +68,7 @@ class Trainer:
         self.lr_step_dict = lr_step_dict
 
         self.num_classes = 85742  # 85742 for MS1MV2, 10575 for Casia, 105 for MINE
-        tf.io.gfile.makedirs("/".join(self.model_path.split("/")[:-1]))
+        tf.io.gfile.makedirs(output_folder)
 
         self.tb_delete_if_exists = True
         if self.use_arcface:
@@ -127,8 +130,8 @@ class Trainer:
 
             if i % alfa_divided_ten == 0:
                 if i % alfa_step == 0 and i > 10:
-                    self.model_engine.model.save_weights(self.model_path)
-                    print(f"[{i}] Model saved to {self.model_path}")
+                    self.model_engine.model.save_weights(os.path.join(self.output_folder, self.model_path))
+                    print(f"[{i}] Model saved to {os.path.join(self.output_folder, self.model_path)}")
 
                 print(f"[{i}] Loss: {loss_mean.result().numpy()} || Reg Loss: {reg_loss.numpy()} || Accuracy: %{acc_mean.result().numpy()} || LR: {self.model_engine.optimizer.learning_rate.numpy()}")
                 acc_mean.reset_states()
@@ -147,8 +150,8 @@ class Trainer:
 
                     if not lower_found:
                         print(f"[{i}] Reached to given maximum steps in 'lr_step_dict'({list(self.lr_step_dict.keys())[-1]})")
-                        self.model_engine.model.save_weights(self.model_path)
-                        print(f"[{i}] Model saved to {self.model_path}, end of training.")
+                        self.model_engine.model.save_weights(os.path.join(self.output_folder, self.model_path))
+                        print(f"[{i}] Model saved to {os.path.join(self.output_folder, self.model_path)}, end of training.")
                         break
 
                 if i % alfa_multiplied_qin == 0 and self.dataset_engine.dataset_test is not None and i > 10:
@@ -167,21 +170,21 @@ class Trainer:
 
                 if i % alfa_multiplied_qin == 0 and self.use_arcface and i > 10:
                     self.test_on_val_data(False, i, alfa_multiplied_qin)
-                    self.save_final_model(sum_it=False, path=f"model_{i}.h5")
-                    self.save_tflite_model(path=f"model_{i}.tflite")
-                    self.save_quantized_tflite_model(path=f"model_quantized_{i}.tflite")
+                    self.save_final_model(sum_it=False, path=os.path.join(self.output_folder, f"model_{i}.h5"))
+                    self.save_tflite_model(path=os.path.join(self.output_folder, f"model_{i}.tflite"))
+                    self.save_quantized_tflite_model(path=os.path.join(self.output_folder, f"model_quantized_{i}.tflite"))
                     print("[*] Final model saved")
                     
                 if max_iteration is not None and i >= max_iteration:
                     print(f"[{i}] Reached to given maximum iteration({max_iteration})")
-                    self.model_engine.model.save_weights(self.model_path)
-                    print(f"[{i}] Model saved to {self.model_path}, end of training.")
+                    self.model_engine.model.save_weights(os.path.join(self.output_folder, self.model_path))
+                    print(f"[{i}] Model saved to {os.path.join(self.output_folder, self.model_path)}, end of training.")
                     break
 
         if max_iteration is None:
             print(f"[*] Reached to end of dataset")
-            self.model_engine.model.save_weights(self.model_path)
-            print(f"[*] Model saved to {self.model_path}, end of training.")
+            self.model_engine.model.save_weights(os.path.join(self.output_folder, self.model_path))
+            print(f"[*] Model saved to {os.path.join(self.output_folder, self.model_path)}, end of training.")
 
     def save_final_model(self, path: str = "arcface_final.h5", n: int = -4, sum_it: bool = True):
         m = tf.keras.models.Model(self.model_engine.model.layers[0].input, self.model_engine.model.layers[n].output)
@@ -235,6 +238,7 @@ if __name__ == '__main__':
         use_arcface=True,  # set False if you want to train a normal classification model
         learning_rate=0.004,  # it doesn't matter if you set lr_step_dict to anything but None
         model_path="ArcFaceModel/model.tf",  # it will save only weights, you can chose "h5" as extension too
+        output_folder="/gdrive/My Drive/Arcface/",  # specify the output folder
         optimizer="SGD",  # SGD, ADAM or MOMENTUM. MOMENTUM is not recommended
         lr_step_dict={
             int(60000 * k_value): 0.004,
@@ -247,6 +251,6 @@ if __name__ == '__main__':
     )
 
     trainer(max_iteration=-1, alfa_step=5000, qin=2)
-    trainer.save_final_model(path="arcface_final.h5")
-    trainer.save_tflite_model(path="model.tflite")
-    trainer.save_quantized_tflite_model(path="model_quantized.tflite")
+    trainer.save_final_model(path=os.path.join(trainer.output_folder, "arcface_final.h5"))
+    trainer.save_tflite_model(path=os.path.join(trainer.output_folder, "model.tflite"))
+    trainer.save_quantized_tflite_model(path=os.path.join(trainer.output_folder, "model_quantized.tflite"))
