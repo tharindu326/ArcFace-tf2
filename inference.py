@@ -1,7 +1,7 @@
 # import sys
 # sys.path.append("../../../")
 import tensorflow as tf
-
+import matplotlib.pyplot as plt
 from face_detection import mtcnn_detector
 
 
@@ -58,9 +58,19 @@ class Engine:
 		image1 = self.detector.draw_faces_on_image(image1, boxes1, color=color)
 		image2 = self.detector.draw_faces_on_image(image2, boxes2, color=color)
 
-		self.detector.display_image(image1, name="image1", destroy_after=False, wait=False)
-		self.detector.display_image(image2, name="image2", destroy_after=True, n=0)
-
+		# self.detector.display_image(image1, name="image1", destroy_after=False, wait=False)
+		# self.detector.display_image(image2, name="image2", destroy_after=True, n=0)
+		self.display_image(image1, name="image1")
+		self.display_image(image2, name="image2")
+  
+	def display_image(self, image, title=None):
+		plt.figure(figsize=(8, 8))
+		plt.imshow(image)
+		if title:
+			plt.title(title)
+		plt.axis('off')
+		plt.show()
+        
 
 if __name__ == '__main__':
 	e = Engine("/gdrive/My Drive/Arcface/model_140000.h5")
