@@ -63,6 +63,6 @@ class Engine:
 
 
 if __name__ == '__main__':
-	e = Engine("../../arcface_final.h5")  # gets only arcface_final path
-	e("t2.jpg", "t4.jpg", th=1.0)  # give two image paths and threshold
+	e = Engine("/gdrive/My Drive/Arcface/model_140000.h5")
+	e("data/t2.jpg", "data/t4.jpg", th=1.14)  # give two image paths and threshold
 
