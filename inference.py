@@ -60,8 +60,8 @@ class Engine:
 
 		# self.detector.display_image(image1, name="image1", destroy_after=False, wait=False)
 		# self.detector.display_image(image2, name="image2", destroy_after=True, n=0)
-		self.display_image(image1, name="image1")
-		self.display_image(image2, name="image2")
+		self.display_image(image1, title="image1")
+		self.display_image(image2, title="image2")
   
 	def display_image(self, image, title=None):
 		plt.figure(figsize=(8, 8))
